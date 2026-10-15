@@ -5,7 +5,7 @@ import { useProjectStore } from "@/stores/project";
 import { useEditorStore } from "@/stores/editor";
 import { FileTree } from "@/components/ui/file-tree";
 import type { FileNode } from "@/types/models";
-import { FolderOpen } from "@lucide/vue";
+import { FolderOpen, FolderOpenDot, RefreshCcw } from "@lucide/vue";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,6 +17,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { invoke } from "@tauri-apps/api/core";
+import { Button } from "@/components/ui/button";
 
 const project = useProjectStore();
 const editor = useEditorStore();
@@ -71,9 +72,12 @@ async function onSelect(node: FileNode) {
       editor.openPath = node.path;
       return;
     }
-    const file = await invoke<{ content: string; mtime_ms: number }>("read_file", {
-      relPath: node.path,
-    });
+    const file = await invoke<{ content: string; mtime_ms: number }>(
+      "read_file",
+      {
+        relPath: node.path,
+      },
+    );
     editor.openFile(node.path, file.content, file.mtime_ms);
   } catch (e) {
     error.value = String(e);
@@ -84,7 +88,11 @@ function onOpen(node: FileNode) {
   void onSelect(node);
 }
 
-async function onCreate(parentPath: string, kind: "file" | "dir", name: string) {
+async function onCreate(
+  parentPath: string,
+  kind: "file" | "dir",
+  name: string,
+) {
   error.value = null;
   const rel = parentPath ? `${parentPath}/${name}` : name;
   try {
@@ -144,21 +152,26 @@ async function confirmDelete() {
 <template>
   <div class="flex h-full flex-col overflow-hidden">
     <div
-      class="flex h-8 shrink-0 items-center justify-between border-b px-3 text-xs font-medium text-muted-foreground"
+      class="flex my-1 h-10 shrink-0 items-center justify-between border-b px-3 text-xs font-medium text-muted-foreground"
     >
-      <span>Files</span>
-      <button
-        class="rounded p-0.5 hover:bg-accent hover:text-foreground"
+      <span class="w-full">Files</span>
+      <Button variant="ghost" size="sm">
+        <FolderOpenDot />
+      </Button>
+      <Button
+        size="sm"
+        variant="ghost"
         title="Refresh"
         :disabled="!hasProject"
         @click="project.refreshTree()"
       >
-        <svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M21 12a9 9 0 1 1-2.64-6.36M21 3v6h-6" />
-        </svg>
-      </button>
+        <RefreshCcw />
+      </Button>
     </div>
-    <p v-if="error" class="shrink-0 bg-destructive/10 px-3 py-1 text-xs text-destructive">
+    <p
+      v-if="error"
+      class="shrink-0 bg-destructive/10 px-3 py-1 text-xs text-destructive"
+    >
       {{ error }}
     </p>
     <div class="min-h-0 flex-1 overflow-auto">
@@ -191,14 +204,20 @@ async function confirmDelete() {
           <AlertDialogTitle>Delete {{ deleteTarget?.kind }}?</AlertDialogTitle>
           <AlertDialogDescription>
             Permanently delete
-            <code class="font-mono text-foreground">{{ deleteTarget?.path }}</code
-            ><template v-if="deleteTarget?.kind === 'dir'"> and all of its contents</template
+            <code class="font-mono text-foreground">{{
+              deleteTarget?.path
+            }}</code
+            ><template v-if="deleteTarget?.kind === 'dir'">
+              and all of its contents</template
             >? This cannot be undone.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction class="bg-destructive text-white hover:bg-destructive/90" @click="confirmDelete">
+          <AlertDialogAction
+            class="bg-destructive text-white hover:bg-destructive/90"
+            @click="confirmDelete"
+          >
             Delete
           </AlertDialogAction>
         </AlertDialogFooter>

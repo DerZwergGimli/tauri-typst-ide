@@ -50,6 +50,7 @@ const RAW_RUNTIME_STATE =
           ["cn", "npm:0.4.0"],\
           ["codemirror-lang-typst", "npm:0.6.0"],\
           ["pinia", "virtual:95a28b352711058c1731c04e83fe7926e3718af4411cf0dd85fbbf51c6ab14208e8a5d7579b32c2f1f1546447ee919bcf11a9da31943efb31d8646a2a154d3fe#npm:4.1.0"],\
+          ["prettier", "npm:3.9.10"],\
           ["reka-ui", "virtual:95a28b352711058c1731c04e83fe7926e3718af4411cf0dd85fbbf51c6ab14208e8a5d7579b32c2f1f1546447ee919bcf11a9da31943efb31d8646a2a154d3fe#npm:2.11.0"],\
           ["tailwindcss", "npm:4.3.3"],\
           ["tauri-typst-ide", "workspace:."],\
@@ -1961,6 +1962,15 @@ const RAW_RUNTIME_STATE =
         "linkType": "HARD"\
       }]\
     ]],\
+    ["prettier", [\
+      ["npm:3.9.10", {\
+        "packageLocation": "./.yarn/unplugged/prettier-npm-3.9.10-551fb7fe51/node_modules/prettier/",\
+        "packageDependencies": [\
+          ["prettier", "npm:3.9.10"]\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
     ["proc-log", [\
       ["npm:7.0.0", {\
         "packageLocation": "../../.yarn/berry/cache/proc-log-npm-7.0.0-d836af0493-10c0.zip/node_modules/proc-log/",\
@@ -2112,6 +2122,7 @@ const RAW_RUNTIME_STATE =
           ["cn", "npm:0.4.0"],\
           ["codemirror-lang-typst", "npm:0.6.0"],\
           ["pinia", "virtual:95a28b352711058c1731c04e83fe7926e3718af4411cf0dd85fbbf51c6ab14208e8a5d7579b32c2f1f1546447ee919bcf11a9da31943efb31d8646a2a154d3fe#npm:4.1.0"],\
+          ["prettier", "npm:3.9.10"],\
           ["reka-ui", "virtual:95a28b352711058c1731c04e83fe7926e3718af4411cf0dd85fbbf51c6ab14208e8a5d7579b32c2f1f1546447ee919bcf11a9da31943efb31d8646a2a154d3fe#npm:2.11.0"],\
           ["tailwindcss", "npm:4.3.3"],\
           ["tauri-typst-ide", "workspace:."],\
