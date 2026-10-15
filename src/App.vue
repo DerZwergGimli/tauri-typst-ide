@@ -67,7 +67,7 @@ async function openDiagnostic(d: Diagnostic) {
 
 <template>
   <div class="flex h-screen flex-col overflow-hidden ">
-    <TopBar @compile="onCompile" />
+    <TopBar @compile="onCompile" /> 
 
     <ResizablePanelGroup direction="horizontal" class="min-h-0 flex-1">
       <ResizablePanel :default-size="20" :min-size="12" :max-size="40">
