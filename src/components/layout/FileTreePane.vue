@@ -80,7 +80,7 @@ async function onSelect(node: FileNode) {
     );
     editor.openFile(node.path, file.content, file.mtime_ms);
   } catch (e) {
-    error.value = String(e);
+    error.value = JSON.stringify(e);
   }
 }
 
@@ -100,7 +100,7 @@ async function onCreate(
     if (parentPath) treeRef.value?.expandParentsOf(rel);
     await project.refreshTree();
   } catch (e) {
-    error.value = String(e);
+    error.value = JSON.stringify(e);
   }
 }
 
@@ -123,7 +123,7 @@ async function onRename(path: string, newName: string) {
     }
     await project.refreshTree();
   } catch (e) {
-    error.value = String(e);
+    error.value = JSON.stringify(e);
   }
 }
 
@@ -144,7 +144,7 @@ async function confirmDelete() {
     }
     await project.refreshTree();
   } catch (e) {
-    error.value = String(e);
+    error.value = JSON.stringify(e);
   }
 }
 </script>
