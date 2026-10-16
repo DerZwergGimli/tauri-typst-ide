@@ -4,7 +4,7 @@ use std::time::UNIX_EPOCH;
 use serde::Serialize;
 use tauri::State;
 
-use crate::error::{rel_from_root, resolve_in_root, AppError, AppResult};
+use crate::error::{AppError, AppResult, rel_from_root, resolve_in_root};
 use crate::state::AppState;
 
 use specta::Type;
@@ -22,6 +22,13 @@ pub struct FileNode {
 pub struct FileContent {
     pub path: String,
     pub content: String,
+    pub mtime_ms: f64,
+}
+
+#[derive(Debug, Clone, Serialize, Type)]
+pub struct FileContentBytes {
+    pub path: String,
+    pub content: Vec<u8>,
     pub mtime_ms: f64,
 }
 
@@ -84,6 +91,7 @@ fn read_tree_at(root: &Path, dir: &Path, depth: usize) -> AppResult<Vec<FileNode
 }
 
 #[tauri::command]
+#[specta::specta]
 pub fn read_dir_tree(state: State<'_, AppState>) -> AppResult<FileNode> {
     let project = state.project()?;
     let children = read_tree_at(&project.root, &project.root, 0)?;
@@ -107,11 +115,10 @@ pub fn read_file(state: State<'_, AppState>, rel_path: String) -> AppResult<File
     if !abs.is_file() {
         return Err(AppError::NotAFile(rel_path.clone()));
     }
-    let content = std::fs::read_to_string(&abs)
-        .map_err(|e| AppError::Io {
-            context: format!("read {rel_path}"),
-            message: e.to_string(),
-        })?;
+    let content = std::fs::read_to_string(&abs).map_err(|e| AppError::Io {
+        context: format!("read {rel_path}"),
+        message: e.to_string(),
+    })?;
     Ok(FileContent {
         path: rel_path,
         content,
@@ -119,23 +126,30 @@ pub fn read_file(state: State<'_, AppState>, rel_path: String) -> AppResult<File
     })
 }
 
-
-
 #[tauri::command]
+#[specta::specta]
 pub fn read_file_bytes(
     state: State<'_, AppState>,
     rel_path: String,
-) -> AppResult<tauri::ipc::Response> {
+) -> AppResult<FileContentBytes> {
     let project = state.project()?;
     let abs = resolve_in_root(&project.root, &rel_path)?;
     if !abs.is_file() {
         return Err(AppError::NotAFile(rel_path.clone()));
     }
-    let bytes = std::fs::read(&abs).map_err(|e| AppError::io(format!("read {rel_path}"), e))?;
-    Ok(tauri::ipc::Response::new(bytes))
+    let content = std::fs::read(&abs).map_err(|e| AppError::Io {
+        context: format!("read {rel_path}"),
+        message: e.to_string(),
+    })?;
+    Ok(FileContentBytes {
+        path: rel_path,
+        content,
+        mtime_ms: mtime_ms(&abs)?,
+    })
 }
 
 #[tauri::command]
+#[specta::specta]
 pub fn write_file(
     state: State<'_, AppState>,
     rel_path: String,
@@ -157,6 +171,7 @@ pub fn write_file(
 }
 
 #[tauri::command]
+#[specta::specta]
 pub fn file_mtime(state: State<'_, AppState>, rel_path: String) -> AppResult<Option<FileMeta>> {
     let project = state.project()?;
     let abs = resolve_in_root(&project.root, &rel_path)?;
@@ -170,11 +185,8 @@ pub fn file_mtime(state: State<'_, AppState>, rel_path: String) -> AppResult<Opt
 }
 
 #[tauri::command]
-pub fn create_entry(
-    state: State<'_, AppState>,
-    rel_path: String,
-    kind: String,
-) -> AppResult<()> {
+#[specta::specta]
+pub fn create_entry(state: State<'_, AppState>, rel_path: String, kind: String) -> AppResult<()> {
     let project = state.project()?;
     let abs = resolve_in_root(&project.root, &rel_path)?;
     if abs.exists() {
@@ -198,6 +210,7 @@ pub fn create_entry(
 }
 
 #[tauri::command]
+#[specta::specta]
 pub fn rename_entry(
     state: State<'_, AppState>,
     old_path: String,
@@ -213,7 +226,8 @@ pub fn rename_entry(
         return Err(AppError::AlreadyExists(new_path));
     }
     if let Some(parent) = new_abs.parent() {
-        std::fs::create_dir_all(parent).map_err(|e| AppError::io(parent.display().to_string(), e))?;
+        std::fs::create_dir_all(parent)
+            .map_err(|e| AppError::io(parent.display().to_string(), e))?;
     }
     std::fs::rename(&old_abs, &new_abs).map_err(|e| AppError::Io {
         context: format!("rename {old_path} -> {new_path}"),
@@ -222,6 +236,7 @@ pub fn rename_entry(
 }
 
 #[tauri::command]
+#[specta::specta]
 pub fn delete_entry(state: State<'_, AppState>, rel_path: String) -> AppResult<()> {
     let project = state.project()?;
     if rel_path.is_empty() {

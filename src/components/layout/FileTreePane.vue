@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { invoke } from "@tauri-apps/api/core";
 import { Button } from "@/components/ui/button";
-import { BackendCommands } from "@/backend/backend.ts";
+import { ExecuteCommand } from "@/backend/backend.ts";
 
 const project = useProjectStore();
 const editor = useEditorStore();
@@ -68,21 +68,22 @@ watch(
 async function onSelect(node: FileNode) {
   error.value = null;
   try {
-    if (node.name.toLowerCase().endsWith(".pdf")) {
-      const bytes = await invoke<ArrayBuffer>("read_file_bytes", {
-        relPath: node.path,
-      });
-      editor.openPreview(node.path, bytes);
-      return;
-    }
-
     const existing = editor.buffers.get(node.path);
     if (existing) {
       editor.openPath = node.path;
       return;
     }
 
-    const res = await BackendCommands.readFile(node.path);
+    //Check if its a PDF
+    if (node.name.toLowerCase().endsWith(".pdf")) {
+      const res = await ExecuteCommand.readFileBytes(node.path);
+      if (res)
+        editor.openPreview(node.path, new Uint8Array(res.content).buffer);
+      return;
+    }
+
+    //else render as text
+    const res = await ExecuteCommand.readFile(node.path);
     if (res) editor.openFile(node.path, res.content, res.mtime_ms);
   } catch (e) {
     error.value = JSON.stringify(e);

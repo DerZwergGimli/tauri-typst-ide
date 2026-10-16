@@ -1,5 +1,5 @@
 // src/api.ts
-import { commands } from "./bindings";
+import { commands } from "./generated/bindings.ts";
 import { useLogsStore } from "@/stores/logs.ts";
 
 type Commands = typeof commands;
@@ -60,7 +60,7 @@ function wrap<K extends keyof Commands>(name: K): WrappedCommands[K] {
   }) as WrappedCommands[K];
 }
 
-export const BackendCommands = Object.fromEntries(
+export const ExecuteCommand = Object.fromEntries(
   (Object.keys(commands) as (keyof Commands)[]).map((name) => [
     name,
     wrap(name),

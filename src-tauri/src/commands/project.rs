@@ -1,14 +1,15 @@
 use std::path::{Path, PathBuf};
 
 use serde::Serialize;
+use specta::Type;
 use tauri::State;
 use tauri_plugin_store::StoreExt;
 
-use crate::error::{rel_from_root, resolve_in_root, AppError, AppResult};
+use crate::error::{AppError, AppResult, rel_from_root, resolve_in_root};
 use crate::state::{AppState, ProjectState};
-use crate::watcher::{watch_project, WatcherState};
+use crate::watcher::{WatcherState, watch_project};
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Type)]
 pub struct ProjectInfo {
     pub root: String,
     pub name: String,
@@ -87,6 +88,7 @@ fn build_project_info(root: &Path, main_file: Option<&Path>) -> AppResult<Projec
 }
 
 #[tauri::command]
+#[specta::specta]
 pub fn open_project(
     app: tauri::AppHandle,
     state: State<'_, AppState>,
@@ -115,6 +117,7 @@ pub fn open_project(
 }
 
 #[tauri::command]
+#[specta::specta]
 pub fn create_project(
     app: tauri::AppHandle,
     state: State<'_, AppState>,
@@ -153,13 +156,18 @@ pub fn create_project(
 }
 
 #[tauri::command]
-pub fn close_project(state: State<'_, AppState>, watcher: State<'_, WatcherState>) -> AppResult<()> {
+#[specta::specta]
+pub fn close_project(
+    state: State<'_, AppState>,
+    watcher: State<'_, WatcherState>,
+) -> AppResult<()> {
     state.clear_project();
     crate::watcher::unwatch(&watcher);
     Ok(())
 }
 
 #[tauri::command]
+#[specta::specta]
 pub fn get_project_info(state: State<'_, AppState>) -> AppResult<Option<ProjectInfo>> {
     match state.project() {
         Ok(p) => Ok(Some(build_project_info(&p.root, p.main_file.as_deref())?)),
@@ -169,6 +177,7 @@ pub fn get_project_info(state: State<'_, AppState>) -> AppResult<Option<ProjectI
 }
 
 #[tauri::command]
+#[specta::specta]
 pub fn set_main_file(
     app: tauri::AppHandle,
     state: State<'_, AppState>,
@@ -189,6 +198,7 @@ pub fn set_main_file(
 }
 
 #[tauri::command]
+#[specta::specta]
 pub fn path_exists(path: String) -> bool {
     Path::new(&path).exists()
 }

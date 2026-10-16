@@ -14,14 +14,29 @@ use watcher::WatcherState;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    let builder =
-        Builder::<tauri::Wry>::new().commands(collect_commands![commands::files::read_file]);
+    let builder = Builder::<tauri::Wry>::new().commands(collect_commands![
+        commands::project::open_project,
+        commands::project::create_project,
+        commands::project::close_project,
+        commands::project::get_project_info,
+        commands::project::set_main_file,
+        commands::project::path_exists,
+        commands::files::read_dir_tree,
+        commands::files::read_file,
+        commands::files::read_file_bytes,
+        commands::files::write_file,
+        commands::files::file_mtime,
+        commands::files::create_entry,
+        commands::files::rename_entry,
+        commands::files::delete_entry,
+        commands::compile::compile,
+    ]);
 
     #[cfg(debug_assertions)] // only regenerate in dev builds
     builder
         .export(
             Typescript::default().header("// @ts-nocheck"),
-            "../src/backend/bindings.ts",
+            "../src/backend/generated/bindings.ts",
         )
         .expect("Failed to export TypeScript bindings");
 

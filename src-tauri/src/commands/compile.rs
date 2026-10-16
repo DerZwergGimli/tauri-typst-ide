@@ -3,35 +3,36 @@ use std::sync::atomic::Ordering;
 use std::time::Instant;
 
 use serde::Serialize;
+use specta::Type;
 use tauri::State;
 use tauri_plugin_opener::OpenerExt;
-use typst::{compile as typst_compile, World, WorldExt};
 use typst::diag::{Severity, SourceDiagnostic, Warned};
+use typst::{World, WorldExt, compile as typst_compile};
 use typst_layout::PagedDocument;
-use typst_pdf::{pdf, PdfOptions};
+use typst_pdf::{PdfOptions, pdf};
 
 use crate::error::{AppError, AppResult};
 use crate::events::EmitExt;
 use crate::state::AppState;
 use crate::typst_engine::world::{ProjectWorld, shared_fonts};
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Type)]
 pub struct Diagnostic {
     pub severity: &'static str,
     pub message: String,
     pub path: Option<String>,
-    pub line: Option<usize>,
-    pub column: Option<usize>,
-    pub offset: Option<usize>,
-    pub length: Option<usize>,
+    pub line: Option<u32>,
+    pub column: Option<u32>,
+    pub offset: Option<u32>,
+    pub length: Option<u32>,
     pub hints: Vec<String>,
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Type)]
 pub struct CompileResult {
     pub success: bool,
     pub pdf_path: Option<String>,
-    pub duration_ms: u64,
+    pub duration_ms: f64,
     pub diagnostics: Vec<Diagnostic>,
 }
 
@@ -46,15 +47,12 @@ fn diagnostic_severity(sev: Severity) -> &'static str {
     }
 }
 
-fn map_diagnostic(
-    world: &ProjectWorld,
-    d: &SourceDiagnostic,
-) -> Diagnostic {
+fn map_diagnostic(world: &ProjectWorld, d: &SourceDiagnostic) -> Diagnostic {
     let mut path: Option<String> = None;
-    let mut line: Option<usize> = None;
-    let mut column: Option<usize> = None;
-    let mut offset: Option<usize> = None;
-    let mut length: Option<usize> = None;
+    let mut line: Option<u32> = None;
+    let mut column: Option<u32> = None;
+    let mut offset: Option<u32> = None;
+    let mut length: Option<u32> = None;
 
     // File + position
     if let Some(id) = d.span.id() {
@@ -62,15 +60,15 @@ fn map_diagnostic(
         path = Some(world.name(id));
         // range
         if let Some(range) = world.range(d.span) {
-            offset = Some(range.start);
-            length = Some(range.end.saturating_sub(range.start));
+            offset = u32::try_from(range.start).ok();
+            length = u32::try_from(range.end.saturating_sub(range.start)).ok();
             // line/col
             if let Ok(src) = world.source(id)
                 && let Some((l, c)) = src.lines().byte_to_line_column(range.start)
             {
                 // 1-based for UI
-                line = Some(l + 1);
-                column = Some(c + 1);
+                line = u32::try_from(l + 1).ok();
+                column = u32::try_from(c + 1).ok();
             }
         }
     }
@@ -97,6 +95,7 @@ fn map_diagnostics<'a>(
 }
 
 #[tauri::command]
+#[specta::specta]
 pub async fn compile(
     app: tauri::AppHandle,
     state: State<'_, AppState>,
@@ -121,49 +120,45 @@ pub async fn compile(
     app.process_status("compile", "started", None);
     app.log("info", "compiling...");
 
-    let result = tauri::async_runtime::spawn_blocking(
-        move || -> Result<TaskOutcome, AppError> {
-            let world = ProjectWorld::new(&root, &main, fonts)?;
-            let Warned { output, warnings } = typst_compile::<PagedDocument>(&world);
+    let result = tauri::async_runtime::spawn_blocking(move || -> Result<TaskOutcome, AppError> {
+        let world = ProjectWorld::new(&root, &main, fonts)?;
+        let Warned { output, warnings } = typst_compile::<PagedDocument>(&world);
 
-            let stale = || gen_in_task.load(Ordering::SeqCst) != generation;
+        let stale = || gen_in_task.load(Ordering::SeqCst) != generation;
 
-            match output {
-                Ok(doc) => {
-                    let mut diags: Vec<Diagnostic> = warnings
-                        .iter()
-                        .map(|w| map_diagnostic(&world, w))
-                        .collect();
-                    match pdf(&doc, &PdfOptions::default()) {
-                        Ok(bytes) => {
-                            if stale() {
-                                return Ok(None);
-                            }
-                            let stem = main
-                                .file_stem()
-                                .and_then(|s| s.to_str())
-                                .unwrap_or("document");
-                            let pdf_path = main.with_file_name(format!("{stem}.pdf"));
-                            std::fs::write(&pdf_path, &bytes)
-                                .map_err(|e| AppError::io("write pdf", e))?;
-                            Ok(Some((true, Some(pdf_path), diags)))
+        match output {
+            Ok(doc) => {
+                let mut diags: Vec<Diagnostic> =
+                    warnings.iter().map(|w| map_diagnostic(&world, w)).collect();
+                match pdf(&doc, &PdfOptions::default()) {
+                    Ok(bytes) => {
+                        if stale() {
+                            return Ok(None);
                         }
-                        Err(errs) => {
-                            diags.extend(map_diagnostics(&world, errs.iter()));
-                            Ok(Some((false, None, diags)))
-                        }
+                        let stem = main
+                            .file_stem()
+                            .and_then(|s| s.to_str())
+                            .unwrap_or("document");
+                        let pdf_path = main.with_file_name(format!("{stem}.pdf"));
+                        std::fs::write(&pdf_path, &bytes)
+                            .map_err(|e| AppError::io("write pdf", e))?;
+                        Ok(Some((true, Some(pdf_path), diags)))
                     }
-                }
-                Err(errs) => {
-                    let mut diags: Vec<Diagnostic> = map_diagnostics(&world, errs.iter());
-                    for w in &warnings {
-                        diags.push(map_diagnostic(&world, w));
+                    Err(errs) => {
+                        diags.extend(map_diagnostics(&world, errs.iter()));
+                        Ok(Some((false, None, diags)))
                     }
-                    Ok(Some((false, None, diags)))
                 }
             }
-        },
-    )
+            Err(errs) => {
+                let mut diags: Vec<Diagnostic> = map_diagnostics(&world, errs.iter());
+                for w in &warnings {
+                    diags.push(map_diagnostic(&world, w));
+                }
+                Ok(Some((false, None, diags)))
+            }
+        }
+    })
     .await
     .map_err(|e| AppError::Other(format!("spawn_blocking: {e}")))??;
 
@@ -177,12 +172,12 @@ pub async fn compile(
         return Ok(CompileResult {
             success: false,
             pdf_path: None,
-            duration_ms: start.elapsed().as_millis() as u64,
+            duration_ms: start.elapsed().as_millis() as f64,
             diagnostics: Vec::new(),
         });
     };
 
-    let duration_ms = start.elapsed().as_millis() as u64;
+    let duration_ms = start.elapsed().as_millis() as f64;
     let pdf_path_str = pdf_path.as_ref().map(|p| p.to_string_lossy().to_string());
 
     if success && pdf_path.is_some() {
@@ -205,7 +200,7 @@ pub async fn compile(
     app.process_status(
         "compile",
         if success { "finished" } else { "failed" },
-        Some(duration_ms),
+        Some(duration_ms as u64),
     );
     Ok(res)
 }
