@@ -2,6 +2,7 @@ import { computed, ref } from "vue";
 import { defineStore } from "pinia";
 import type { FileNode, ProjectInfo, RecentProject } from "@/types/models";
 import { useEditorStore } from "@/stores/editor";
+import { ExecuteCommand } from "@/backend";
 
 const MAX_RECENTS = 10;
 
@@ -129,8 +130,7 @@ export const useProjectStore = defineStore("project", () => {
   }
 
   async function closeProject() {
-    const { invoke } = await import("@tauri-apps/api/core");
-    await invoke("close_project");
+    await ExecuteCommand.closeProject();
     root.value = null;
     name.value = null;
     mainFile.value = null;
@@ -140,8 +140,7 @@ export const useProjectStore = defineStore("project", () => {
   }
 
   async function setMainFile(path: string) {
-    const { invoke } = await import("@tauri-apps/api/core");
-    await invoke("set_main_file", { relPath: path });
+    await ExecuteCommand.setMainFile(path);
     mainFile.value = path;
   }
 

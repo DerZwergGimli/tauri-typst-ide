@@ -38,14 +38,13 @@ suite yet.
 
 Frontend (`src/`) — Vue 3 `<script setup>`, Pinia setup-stores, `@/` → `src/`:
 
-- `stores/project.ts` — project root/name, main file, file tree, recents
-  (persisted via `tauri-plugin-store` in `app-settings.json`), expanded-dir
+- `stores/project.ts` — project root/name, main file, file tree, recents (persisted via `tauri-plugin-store` in
+  `app-settings.json`), expanded-dir
   persistence (`expanded:<root>`), `refreshTree()`.
 - `stores/editor.ts` — open buffers, dirty tracking, save/reload/reset,
   external-change flags, `jumpTo`, PDF preview (`previewPath`/`previewBytes`/
   `openPreview`).
-- `stores/compile.ts` — compile flow + the shared Save/Discard/Cancel prompt
-  (`ensureSaved`, `promptMessage`).
+- `stores/compile.ts` — compile flow + the shared Save/Discard/Cancel prompt (`ensureSaved`, `promptMessage`).
 - `stores/logs.ts` — log entries, diagnostics, `isCompiling`.
 - `composables/` — `useCodeMirror`, `useTauriEvents` (bridges Rust events),
   `useGlobalShortcuts`.
@@ -79,7 +78,7 @@ Backend (`src-tauri/src/`) — commands registered in `lib.rs`:
 
 ### IPC / events
 
-- JS → Rust: `invoke("<snake_case_command>", { camelCaseArgs })`. Tauri v2
+- JS → Rust: `ExecuteCommand`. Tauri v2
   converts camelCase JS args to snake_case Rust params.
 - Rust → JS events: `log` (`LogPayload`), `process-status`
   (`ProcessStatusPayload`), `fs-changed` (`FsChangedPayload`:
@@ -107,8 +106,8 @@ Backend (`src-tauri/src/`) — commands registered in `lib.rs`:
   +1 for the UI).
 - **Severity strings:** Rust emits `"warning"` (not `"warn"`) to match the TS
   union `"error" | "warning"`.
-- Long compiles run in `tauri::async_runtime::spawn_blocking`; a generation guard
-  (`AppState::begin_compile`) discards superseded results.
+- Long compiles run in `tauri::async_runtime::spawn_blocking`; a generation guard (`AppState::begin_compile`) discards
+  superseded results.
 
 **Watcher:** `notify` `EventKind` is exhaustive; ignore `EventKind::Access`
 (fires on every read and would spam events) and filter dotfiles / `target` /

@@ -16,7 +16,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { invoke } from "@tauri-apps/api/core";
 import { Button } from "@/components/ui/button";
 import { ExecuteCommand } from "@/backend/backend.ts";
 
@@ -102,7 +101,8 @@ async function onCreate(
   error.value = null;
   const rel = parentPath ? `${parentPath}/${name}` : name;
   try {
-    await invoke("create_entry", { relPath: rel, kind });
+    await ExecuteCommand.createEntry(rel, kind);
+
     if (parentPath) treeRef.value?.expandParentsOf(rel);
     await project.refreshTree();
   } catch (e) {
@@ -116,7 +116,8 @@ async function onRename(path: string, newName: string) {
   const parent = idx === -1 ? "" : path.slice(0, idx);
   const newPath = parent ? `${parent}/${newName}` : newName;
   try {
-    await invoke("rename_entry", { oldPath: path, newPath });
+    await ExecuteCommand.renameEntry(path, newPath);
+
     // keep editor state consistent with the rename
     const buf = editor.buffers.get(path);
     if (buf) {
@@ -143,7 +144,7 @@ async function confirmDelete() {
   deleteTarget.value = null;
   error.value = null;
   try {
-    await invoke("delete_entry", { relPath: node.path });
+    await ExecuteCommand.deleteEntry(node.path);
     editor.closeFile(node.path);
     if (project.mainFile === node.path) {
       project.mainFile = null;
