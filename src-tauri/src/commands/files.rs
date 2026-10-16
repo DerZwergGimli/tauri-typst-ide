@@ -7,7 +7,9 @@ use tauri::State;
 use crate::error::{rel_from_root, resolve_in_root, AppError, AppResult};
 use crate::state::AppState;
 
-#[derive(Debug, Clone, Serialize)]
+use specta::Type;
+
+#[derive(Debug, Clone, Serialize, Type)]
 pub struct FileNode {
     pub name: String,
     pub path: String,
@@ -16,28 +18,28 @@ pub struct FileNode {
     pub children: Option<Vec<FileNode>>,
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Type)]
 pub struct FileContent {
     pub path: String,
     pub content: String,
-    pub mtime_ms: u64,
+    pub mtime_ms: f64,
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Type)]
 pub struct FileMeta {
     pub path: String,
-    pub mtime_ms: u64,
+    pub mtime_ms: f64,
 }
 
-fn mtime_ms(path: &Path) -> AppResult<u64> {
+fn mtime_ms(path: &Path) -> AppResult<f64> {
     let meta = std::fs::metadata(path).map_err(|e| AppError::io(path.display().to_string(), e))?;
     let mtime = meta
         .modified()
         .map_err(|e| AppError::io(path.display().to_string(), e))?;
     Ok(mtime
         .duration_since(UNIX_EPOCH)
-        .map(|d| d.as_millis() as u64)
-        .unwrap_or(0))
+        .map(|d| d.as_millis() as f64)
+        .unwrap_or(0.0))
 }
 
 fn read_tree_at(root: &Path, dir: &Path, depth: usize) -> AppResult<Vec<FileNode>> {
@@ -98,6 +100,7 @@ pub fn read_dir_tree(state: State<'_, AppState>) -> AppResult<FileNode> {
 }
 
 #[tauri::command]
+#[specta::specta]
 pub fn read_file(state: State<'_, AppState>, rel_path: String) -> AppResult<FileContent> {
     let project = state.project()?;
     let abs = resolve_in_root(&project.root, &rel_path)?;
@@ -115,6 +118,8 @@ pub fn read_file(state: State<'_, AppState>, rel_path: String) -> AppResult<File
         mtime_ms: mtime_ms(&abs)?,
     })
 }
+
+
 
 #[tauri::command]
 pub fn write_file(

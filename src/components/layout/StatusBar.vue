@@ -34,6 +34,12 @@ const levelClasses: Record<string, string> = {
         v-if="latestEntry"
         :class="cn('truncate font-mono', levelClasses[latestEntry.level])"
       >
+        [{{ latestEntry.context }}]
+      </span>
+      <span
+        v-if="latestEntry"
+        :class="cn('truncate font-mono', levelClasses[latestEntry.level])"
+      >
         {{ latestEntry.message }}
       </span>
       <span v-else class="truncate font-mono text-muted-foreground">

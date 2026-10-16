@@ -1,9 +1,11 @@
 use serde::Serialize;
 use std::path::PathBuf;
 
+use specta::Type;
+
 pub type AppResult<T> = Result<T, AppError>;
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Type)]
 #[serde(tag = "kind", content = "message", rename_all = "camelCase")]
 pub enum AppError {
     NoProject,

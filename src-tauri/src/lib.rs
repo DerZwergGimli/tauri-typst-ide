@@ -9,10 +9,23 @@ mod watcher;
 
 use state::AppState;
 use watcher::WatcherState;
+use specta_typescript::Typescript;
+use tauri_specta::{collect_commands, Builder};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    tauri::Builder::default()
+
+        let builder = Builder::<tauri::Wry>::new()
+            .commands(collect_commands![commands::files::read_file]);
+
+        #[cfg(debug_assertions)] // only regenerate in dev builds
+        builder
+            .export(Typescript::default(), "../src/backend/bindings.ts")
+            .expect("Failed to export TypeScript bindings");
+
+
+
+        tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_store::Builder::default().build())

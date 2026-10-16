@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
 import { storeToRefs } from "pinia";
+import { commands, FileContent } from "@/backend/bindings.ts";
 import { useProjectStore } from "@/stores/project";
 import { useEditorStore } from "@/stores/editor";
 import { FileTree } from "@/components/ui/file-tree";
@@ -18,6 +19,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { invoke } from "@tauri-apps/api/core";
 import { Button } from "@/components/ui/button";
+import { BackendCommands } from "@/backend/backend.ts";
 
 const project = useProjectStore();
 const editor = useEditorStore();
@@ -72,13 +74,9 @@ async function onSelect(node: FileNode) {
       editor.openPath = node.path;
       return;
     }
-    const file = await invoke<{ content: string; mtime_ms: number }>(
-      "read_file",
-      {
-        relPath: node.path,
-      },
-    );
-    editor.openFile(node.path, file.content, file.mtime_ms);
+
+    const res = await BackendCommands.readFile(node.path);
+    if (res) editor.openFile(node.path, res.content, res.mtime_ms);
   } catch (e) {
     error.value = JSON.stringify(e);
   }
