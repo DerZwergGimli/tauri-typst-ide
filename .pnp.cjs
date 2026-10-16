@@ -35,6 +35,7 @@ const RAW_RUNTIME_STATE =
           ["@codemirror/search", "npm:6.7.2"],\
           ["@codemirror/state", "npm:6.7.6"],\
           ["@codemirror/view", "npm:6.43.14"],\
+          ["@lezer/highlight", "npm:1.2.5"],\
           ["@lucide/vue", "virtual:95a28b352711058c1731c04e83fe7926e3718af4411cf0dd85fbbf51c6ab14208e8a5d7579b32c2f1f1546447ee919bcf11a9da31943efb31d8646a2a154d3fe#npm:1.57.0"],\
           ["@tailwindcss/vite", "virtual:95a28b352711058c1731c04e83fe7926e3718af4411cf0dd85fbbf51c6ab14208e8a5d7579b32c2f1f1546447ee919bcf11a9da31943efb31d8646a2a154d3fe#npm:4.3.3"],\
           ["@tauri-apps/api", "npm:2.12.3"],\
@@ -2237,6 +2238,7 @@ const RAW_RUNTIME_STATE =
           ["@codemirror/search", "npm:6.7.2"],\
           ["@codemirror/state", "npm:6.7.6"],\
           ["@codemirror/view", "npm:6.43.14"],\
+          ["@lezer/highlight", "npm:1.2.5"],\
           ["@lucide/vue", "virtual:95a28b352711058c1731c04e83fe7926e3718af4411cf0dd85fbbf51c6ab14208e8a5d7579b32c2f1f1546447ee919bcf11a9da31943efb31d8646a2a154d3fe#npm:1.57.0"],\
           ["@tailwindcss/vite", "virtual:95a28b352711058c1731c04e83fe7926e3718af4411cf0dd85fbbf51c6ab14208e8a5d7579b32c2f1f1546447ee919bcf11a9da31943efb31d8646a2a154d3fe#npm:4.3.3"],\
           ["@tauri-apps/api", "npm:2.12.3"],\

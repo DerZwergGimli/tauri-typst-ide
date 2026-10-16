@@ -273,7 +273,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@lezer/highlight@npm:^1.0.0, @lezer/highlight@npm:^1.2.1":
+"@lezer/highlight@npm:^1.0.0, @lezer/highlight@npm:^1.2.1, @lezer/highlight@npm:^1.2.5":
   version: 1.2.5
   resolution: "@lezer/highlight@npm:1.2.5"
   dependencies:
@@ -1924,6 +1924,7 @@ __metadata:
     "@codemirror/search": "npm:^6.7.2"
     "@codemirror/state": "npm:^6.7.6"
     "@codemirror/view": "npm:^6.43.14"
+    "@lezer/highlight": "npm:^1.2.5"
     "@lucide/vue": "npm:^1.57.0"
     "@tailwindcss/vite": "npm:^4.3.3"
     "@tauri-apps/api": "npm:^2"
