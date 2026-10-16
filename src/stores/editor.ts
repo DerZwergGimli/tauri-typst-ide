@@ -20,6 +20,9 @@ export const useEditorStore = defineStore("editor", () => {
   );
   /** Paths that changed on disk while open in the editor. */
   const externalChanges = reactive(new Map<string, ExternalChangeKind>());
+  /** Non-editable binary preview (currently PDF only). No OpenBuffer is created. */
+  const previewPath = ref<string | null>(null);
+  const previewBytes = ref<ArrayBuffer | null>(null);
 
   const openBuffer = computed(() =>
     openPath.value ? buffers.get(openPath.value) ?? null : null,
@@ -40,6 +43,12 @@ export const useEditorStore = defineStore("editor", () => {
     if (!buffers.has(path)) {
       buffers.set(path, { path, content, savedContent: content, mtimeMs });
     }
+    openPath.value = path;
+  }
+
+  function openPreview(path: string, bytes: ArrayBuffer) {
+    previewBytes.value = bytes;
+    previewPath.value = path;
     openPath.value = path;
   }
 
@@ -66,6 +75,10 @@ export const useEditorStore = defineStore("editor", () => {
   function closeFile(path: string) {
     buffers.delete(path);
     externalChanges.delete(path);
+    if (previewPath.value === path) {
+      previewPath.value = null;
+      previewBytes.value = null;
+    }
     if (openPath.value === path) {
       openPath.value = buffers.size > 0 ? [...buffers.keys()][0]! : null;
     }
@@ -115,6 +128,8 @@ export const useEditorStore = defineStore("editor", () => {
   function reset() {
     buffers.clear();
     externalChanges.clear();
+    previewPath.value = null;
+    previewBytes.value = null;
     openPath.value = null;
     jumpRequest.value = null;
   }
@@ -128,11 +143,14 @@ export const useEditorStore = defineStore("editor", () => {
     buffers,
     jumpRequest,
     externalChanges,
+    previewPath,
+    previewBytes,
     openBuffer,
     isDirty,
     dirtyPaths,
     openExternalChange,
     openFile,
+    openPreview,
     updateContent,
     markSaved,
     reloadBuffer,

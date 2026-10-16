@@ -7,25 +7,25 @@ mod state;
 mod typst_engine;
 mod watcher;
 
-use state::AppState;
-use watcher::WatcherState;
 use specta_typescript::Typescript;
-use tauri_specta::{collect_commands, Builder};
+use state::AppState;
+use tauri_specta::{Builder, collect_commands};
+use watcher::WatcherState;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    let builder =
+        Builder::<tauri::Wry>::new().commands(collect_commands![commands::files::read_file]);
 
-        let builder = Builder::<tauri::Wry>::new()
-            .commands(collect_commands![commands::files::read_file]);
+    #[cfg(debug_assertions)] // only regenerate in dev builds
+    builder
+        .export(
+            Typescript::default().header("// @ts-nocheck"),
+            "../src/backend/bindings.ts",
+        )
+        .expect("Failed to export TypeScript bindings");
 
-        #[cfg(debug_assertions)] // only regenerate in dev builds
-        builder
-            .export(Typescript::default(), "../src/backend/bindings.ts")
-            .expect("Failed to export TypeScript bindings");
-
-
-
-        tauri::Builder::default()
+    tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_store::Builder::default().build())
@@ -40,6 +40,7 @@ pub fn run() {
             commands::project::path_exists,
             commands::files::read_dir_tree,
             commands::files::read_file,
+            commands::files::read_file_bytes,
             commands::files::write_file,
             commands::files::file_mtime,
             commands::files::create_entry,

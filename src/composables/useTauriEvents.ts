@@ -38,6 +38,22 @@ export function useTauriEvents() {
    * updated to the file's new mtime, so an equal mtime means "our own write".
    */
   async function handleFsChange(path: string, kind: FsChangedEvent["kind"]) {
+    if (path === editor.previewPath) {
+      if (kind === "removed") {
+        editor.closeFile(path);
+        return;
+      }
+      try {
+        const bytes = await invoke<ArrayBuffer>("read_file_bytes", {
+          relPath: path,
+        });
+        editor.openPreview(path, bytes);
+      } catch {
+        // ignore
+      }
+      return;
+    }
+
     const buf = editor.buffers.get(path);
     if (!buf) return;
 

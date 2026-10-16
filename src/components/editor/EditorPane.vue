@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, defineAsyncComponent } from "vue";
 import { storeToRefs } from "pinia";
 import { useEditorStore } from "@/stores/editor";
 import { useLogsStore } from "@/stores/logs";
@@ -10,10 +10,29 @@ import { invoke } from "@tauri-apps/api/core";
 import type { FileContent } from "@/types/models";
 import { Dot, TriangleAlert } from "@lucide/vue";
 
+// pdf.js (~1MB) is only fetched the first time a PDF is previewed.
+const PdfPreview = defineAsyncComponent(
+  () => import("@/components/editor/PdfPreview.vue"),
+);
+
 const editor = useEditorStore();
 const logs = useLogsStore();
-const { openPath, openBuffer, isDirty, jumpRequest, openExternalChange } =
-  storeToRefs(editor);
+const {
+  openPath,
+  openBuffer,
+  isDirty,
+  jumpRequest,
+  openExternalChange,
+  previewPath,
+  previewBytes,
+} = storeToRefs(editor);
+
+const showPreview = computed(
+  () =>
+    previewBytes.value !== null &&
+    previewPath.value !== null &&
+    openPath.value === previewPath.value,
+);
 
 const displayName = computed(() => {
   if (!openPath.value) return "";
@@ -66,7 +85,7 @@ function keepMine() {
 
 <template>
   <div class="flex h-full min-h-0 flex-col">
-    <EditorEmptyState v-if="!openPath || !openBuffer" />
+    <EditorEmptyState v-if="!openPath || (!openBuffer && !showPreview)" />
     <template v-else>
       <div
         class="flex h-8 shrink-0 items-center gap-1 border-b px-3 text-xs text-muted-foreground"
@@ -112,9 +131,15 @@ function keepMine() {
       </div>
 
       <div class="min-h-0 flex-1">
+        <PdfPreview
+          v-if="showPreview"
+          :key="openPath!"
+          :bytes="previewBytes!"
+        />
         <CodeEditor
+          v-else
           :key="openPath"
-          :model-value="openBuffer.content"
+          :model-value="openBuffer!.content"
           @update:model-value="onChange"
           @save="save"
           :jump-to="jumpRequest"

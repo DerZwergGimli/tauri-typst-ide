@@ -68,6 +68,14 @@ watch(
 async function onSelect(node: FileNode) {
   error.value = null;
   try {
+    if (node.name.toLowerCase().endsWith(".pdf")) {
+      const bytes = await invoke<ArrayBuffer>("read_file_bytes", {
+        relPath: node.path,
+      });
+      editor.openPreview(node.path, bytes);
+      return;
+    }
+
     const existing = editor.buffers.get(node.path);
     if (existing) {
       editor.openPath = node.path;

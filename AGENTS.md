@@ -42,13 +42,17 @@ Frontend (`src/`) — Vue 3 `<script setup>`, Pinia setup-stores, `@/` → `src/
   (persisted via `tauri-plugin-store` in `app-settings.json`), expanded-dir
   persistence (`expanded:<root>`), `refreshTree()`.
 - `stores/editor.ts` — open buffers, dirty tracking, save/reload/reset,
-  external-change flags, `jumpTo`.
+  external-change flags, `jumpTo`, PDF preview (`previewPath`/`previewBytes`/
+  `openPreview`).
 - `stores/compile.ts` — compile flow + the shared Save/Discard/Cancel prompt
   (`ensureSaved`, `promptMessage`).
 - `stores/logs.ts` — log entries, diagnostics, `isCompiling`.
 - `composables/` — `useCodeMirror`, `useTauriEvents` (bridges Rust events),
   `useGlobalShortcuts`.
 - `components/layout/*` — `TopBar`, `FileTreePane`, `EditorPane` shell, `StatusBar`.
+- `components/editor/PdfPreview.vue` — pdf.js (legacy build) canvas viewer:
+  zoom, fit-width, lazy pages via IntersectionObserver. Loaded async on first
+  `.pdf` open; raw bytes come from the `read_file_bytes` command.
 - `components/ui/*` — shadcn-vue components (generated; avoid hand-editing beyond
   project-specific ones like `file-tree/`).
 - `types/models.ts` — TS mirrors of Rust serde types. **Keep in sync.**
@@ -59,8 +63,11 @@ Backend (`src-tauri/src/`) — commands registered in `lib.rs`:
 
 - `commands/project.rs` — `open_project`, `create_project`, `close_project`,
   `get_project_info`, `set_main_file`, `path_exists`. Opens/closes the FS watcher.
-- `commands/files.rs` — `read_dir_tree`, `read_file`, `write_file`, `file_mtime`,
-  `create_entry`, `rename_entry`, `delete_entry`.
+- `commands/files.rs` — `read_dir_tree`, `read_file`, `read_file_bytes`,
+  `write_file`, `file_mtime`, `create_entry`, `rename_entry`, `delete_entry`.
+  `read_file_bytes` returns a `tauri::ipc::Response` (raw bytes); it is **not**
+  in `collect_commands!` (specta can't type `Response`) — call it with raw
+  `invoke<ArrayBuffer>`.
 - `commands/compile.rs` — `compile`: runs the Typst engine, maps diagnostics,
   writes `<main-stem>.pdf` next to the main `.typ`, opens it in the system viewer.
 - `typst_engine/world.rs` — `ProjectWorld` impl of `typst::World`; shared font

@@ -122,6 +122,20 @@ pub fn read_file(state: State<'_, AppState>, rel_path: String) -> AppResult<File
 
 
 #[tauri::command]
+pub fn read_file_bytes(
+    state: State<'_, AppState>,
+    rel_path: String,
+) -> AppResult<tauri::ipc::Response> {
+    let project = state.project()?;
+    let abs = resolve_in_root(&project.root, &rel_path)?;
+    if !abs.is_file() {
+        return Err(AppError::NotAFile(rel_path.clone()));
+    }
+    let bytes = std::fs::read(&abs).map_err(|e| AppError::io(format!("read {rel_path}"), e))?;
+    Ok(tauri::ipc::Response::new(bytes))
+}
+
+#[tauri::command]
 pub fn write_file(
     state: State<'_, AppState>,
     rel_path: String,

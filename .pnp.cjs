@@ -49,6 +49,7 @@ const RAW_RUNTIME_STATE =
           ["class-variance-authority", "npm:0.7.1"],\
           ["cn", "npm:0.4.0"],\
           ["codemirror-lang-typst", "npm:0.6.0"],\
+          ["pdfjs-dist", "npm:6.4.299"],\
           ["pinia", "virtual:95a28b352711058c1731c04e83fe7926e3718af4411cf0dd85fbbf51c6ab14208e8a5d7579b32c2f1f1546447ee919bcf11a9da31943efb31d8646a2a154d3fe#npm:4.1.0"],\
           ["prettier", "npm:3.9.10"],\
           ["reka-ui", "virtual:95a28b352711058c1731c04e83fe7926e3718af4411cf0dd85fbbf51c6ab14208e8a5d7579b32c2f1f1546447ee919bcf11a9da31943efb31d8646a2a154d3fe#npm:2.11.0"],\
@@ -422,6 +423,125 @@ const RAW_RUNTIME_STATE =
         "packageLocation": "../../.yarn/berry/cache/@marijn-find-cluster-break-npm-1.0.4-20d4f26924-10c0.zip/node_modules/@marijn/find-cluster-break/",\
         "packageDependencies": [\
           ["@marijn/find-cluster-break", "npm:1.0.4"]\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
+    ["@napi-rs/canvas", [\
+      ["npm:1.0.11", {\
+        "packageLocation": "../../.yarn/berry/cache/@napi-rs-canvas-npm-1.0.11-d4da2883b7-10c0.zip/node_modules/@napi-rs/canvas/",\
+        "packageDependencies": [\
+          ["@napi-rs/canvas", "npm:1.0.11"],\
+          ["@napi-rs/canvas-android-arm64", "npm:1.0.11"],\
+          ["@napi-rs/canvas-darwin-arm64", "npm:1.0.11"],\
+          ["@napi-rs/canvas-darwin-x64", "npm:1.0.11"],\
+          ["@napi-rs/canvas-linux-arm-gnueabihf", "npm:1.0.11"],\
+          ["@napi-rs/canvas-linux-arm64-gnu", "npm:1.0.11"],\
+          ["@napi-rs/canvas-linux-arm64-musl", "npm:1.0.11"],\
+          ["@napi-rs/canvas-linux-riscv64-gnu", "npm:1.0.11"],\
+          ["@napi-rs/canvas-linux-x64-gnu", "npm:1.0.11"],\
+          ["@napi-rs/canvas-linux-x64-musl", "npm:1.0.11"],\
+          ["@napi-rs/canvas-win32-arm64-msvc", "npm:1.0.11"],\
+          ["@napi-rs/canvas-win32-x64-msvc", "npm:1.0.11"]\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
+    ["@napi-rs/canvas-android-arm64", [\
+      ["npm:1.0.11", {\
+        "packageLocation": "./.yarn/unplugged/@napi-rs-canvas-android-arm64-npm-1.0.11-b3a9e1f626/node_modules/@napi-rs/canvas-android-arm64/",\
+        "packageDependencies": [\
+          ["@napi-rs/canvas-android-arm64", "npm:1.0.11"]\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
+    ["@napi-rs/canvas-darwin-arm64", [\
+      ["npm:1.0.11", {\
+        "packageLocation": "./.yarn/unplugged/@napi-rs-canvas-darwin-arm64-npm-1.0.11-c7797ea5dc/node_modules/@napi-rs/canvas-darwin-arm64/",\
+        "packageDependencies": [\
+          ["@napi-rs/canvas-darwin-arm64", "npm:1.0.11"]\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
+    ["@napi-rs/canvas-darwin-x64", [\
+      ["npm:1.0.11", {\
+        "packageLocation": "./.yarn/unplugged/@napi-rs-canvas-darwin-x64-npm-1.0.11-3021715b4b/node_modules/@napi-rs/canvas-darwin-x64/",\
+        "packageDependencies": [\
+          ["@napi-rs/canvas-darwin-x64", "npm:1.0.11"]\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
+    ["@napi-rs/canvas-linux-arm-gnueabihf", [\
+      ["npm:1.0.11", {\
+        "packageLocation": "./.yarn/unplugged/@napi-rs-canvas-linux-arm-gnueabihf-npm-1.0.11-4819e57a9a/node_modules/@napi-rs/canvas-linux-arm-gnueabihf/",\
+        "packageDependencies": [\
+          ["@napi-rs/canvas-linux-arm-gnueabihf", "npm:1.0.11"]\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
+    ["@napi-rs/canvas-linux-arm64-gnu", [\
+      ["npm:1.0.11", {\
+        "packageLocation": "./.yarn/unplugged/@napi-rs-canvas-linux-arm64-gnu-npm-1.0.11-a87b347b36/node_modules/@napi-rs/canvas-linux-arm64-gnu/",\
+        "packageDependencies": [\
+          ["@napi-rs/canvas-linux-arm64-gnu", "npm:1.0.11"]\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
+    ["@napi-rs/canvas-linux-arm64-musl", [\
+      ["npm:1.0.11", {\
+        "packageLocation": "./.yarn/unplugged/@napi-rs-canvas-linux-arm64-musl-npm-1.0.11-35326caa45/node_modules/@napi-rs/canvas-linux-arm64-musl/",\
+        "packageDependencies": [\
+          ["@napi-rs/canvas-linux-arm64-musl", "npm:1.0.11"]\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
+    ["@napi-rs/canvas-linux-riscv64-gnu", [\
+      ["npm:1.0.11", {\
+        "packageLocation": "./.yarn/unplugged/@napi-rs-canvas-linux-riscv64-gnu-npm-1.0.11-5e1e9e235e/node_modules/@napi-rs/canvas-linux-riscv64-gnu/",\
+        "packageDependencies": [\
+          ["@napi-rs/canvas-linux-riscv64-gnu", "npm:1.0.11"]\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
+    ["@napi-rs/canvas-linux-x64-gnu", [\
+      ["npm:1.0.11", {\
+        "packageLocation": "./.yarn/unplugged/@napi-rs-canvas-linux-x64-gnu-npm-1.0.11-b0879c7b7b/node_modules/@napi-rs/canvas-linux-x64-gnu/",\
+        "packageDependencies": [\
+          ["@napi-rs/canvas-linux-x64-gnu", "npm:1.0.11"]\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
+    ["@napi-rs/canvas-linux-x64-musl", [\
+      ["npm:1.0.11", {\
+        "packageLocation": "./.yarn/unplugged/@napi-rs-canvas-linux-x64-musl-npm-1.0.11-6f896bcca0/node_modules/@napi-rs/canvas-linux-x64-musl/",\
+        "packageDependencies": [\
+          ["@napi-rs/canvas-linux-x64-musl", "npm:1.0.11"]\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
+    ["@napi-rs/canvas-win32-arm64-msvc", [\
+      ["npm:1.0.11", {\
+        "packageLocation": "./.yarn/unplugged/@napi-rs-canvas-win32-arm64-msvc-npm-1.0.11-d757fae3d5/node_modules/@napi-rs/canvas-win32-arm64-msvc/",\
+        "packageDependencies": [\
+          ["@napi-rs/canvas-win32-arm64-msvc", "npm:1.0.11"]\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
+    ["@napi-rs/canvas-win32-x64-msvc", [\
+      ["npm:1.0.11", {\
+        "packageLocation": "./.yarn/unplugged/@napi-rs-canvas-win32-x64-msvc-npm-1.0.11-d17b831ce9/node_modules/@napi-rs/canvas-win32-x64-msvc/",\
+        "packageDependencies": [\
+          ["@napi-rs/canvas-win32-x64-msvc", "npm:1.0.11"]\
         ],\
         "linkType": "HARD"\
       }]\
@@ -1892,6 +2012,16 @@ const RAW_RUNTIME_STATE =
         "linkType": "HARD"\
       }]\
     ]],\
+    ["pdfjs-dist", [\
+      ["npm:6.4.299", {\
+        "packageLocation": "../../.yarn/berry/cache/pdfjs-dist-npm-6.4.299-98d54b4097-10c0.zip/node_modules/pdfjs-dist/",\
+        "packageDependencies": [\
+          ["@napi-rs/canvas", "npm:1.0.11"],\
+          ["pdfjs-dist", "npm:6.4.299"]\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
     ["perfect-debounce", [\
       ["npm:2.1.0", {\
         "packageLocation": "../../.yarn/berry/cache/perfect-debounce-npm-2.1.0-43859a016c-10c0.zip/node_modules/perfect-debounce/",\
@@ -2121,6 +2251,7 @@ const RAW_RUNTIME_STATE =
           ["class-variance-authority", "npm:0.7.1"],\
           ["cn", "npm:0.4.0"],\
           ["codemirror-lang-typst", "npm:0.6.0"],\
+          ["pdfjs-dist", "npm:6.4.299"],\
           ["pinia", "virtual:95a28b352711058c1731c04e83fe7926e3718af4411cf0dd85fbbf51c6ab14208e8a5d7579b32c2f1f1546447ee919bcf11a9da31943efb31d8646a2a154d3fe#npm:4.1.0"],\
           ["prettier", "npm:3.9.10"],\
           ["reka-ui", "virtual:95a28b352711058c1731c04e83fe7926e3718af4411cf0dd85fbbf51c6ab14208e8a5d7579b32c2f1f1546447ee919bcf11a9da31943efb31d8646a2a154d3fe#npm:2.11.0"],\
