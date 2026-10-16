@@ -11,6 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { FolderOpen, Play } from "@lucide/vue";
+import ModeToggle from "@/components/layout/ModeToggle.vue";
 
 const project = useProjectStore();
 const logs = useLogsStore();
@@ -61,9 +62,14 @@ function openProjectModal() {
         @click="emit('compile')"
       >
         <Play v-if="!isCompiling" class="mr-1.5 size-4" />
-        <span v-else class="mr-1.5 size-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+        <span
+          v-else
+          class="mr-1.5 size-4 animate-spin rounded-full border-2 border-current border-t-transparent"
+        />
         Compile
       </Button>
     </div>
+    <div class="flex w-full"></div>
+    <ModeToggle />
   </header>
 </template>
