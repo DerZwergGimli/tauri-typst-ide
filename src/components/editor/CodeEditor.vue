@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useCodeMirror } from "@/composables/useCodeMirror";
-import { loadTypstLanguage } from "@/lib/typstLanguage";
 
 const props = withDefaults(
   defineProps<{
     modelValue: string;
+    fileName: string;
     readOnly?: boolean;
     jumpTo?: { offset: number; length: number; nonce: number } | null;
   }>(),
@@ -35,8 +35,8 @@ onMounted(async () => {
     onSave: () => emit("save"),
   });
 
-  const language = await loadTypstLanguage();
-  api.setLanguageExtensions([language]);
+  //const language = await loadTypstLanguage();
+  await api.setLanguageForFile(props.fileName);
 });
 
 onBeforeUnmount(() => {

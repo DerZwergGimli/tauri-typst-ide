@@ -140,6 +140,7 @@ function keepMine() {
           v-else
           :key="openPath"
           :model-value="openBuffer!.content"
+          :fileName="openPath!"
           @update:model-value="onChange"
           @save="save"
           :jump-to="jumpRequest"

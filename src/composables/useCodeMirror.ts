@@ -26,6 +26,7 @@ import {
 import { highlightSelectionMatches } from "@codemirror/search";
 import { closeBrackets } from "@codemirror/autocomplete";
 import { tags as t } from "@lezer/highlight";
+import { findLanguage } from "@/lib/languages.ts";
 
 const c = (name: string) => `var(--${name})`;
 const tint = (name: string, pct: number) =>
@@ -207,6 +208,26 @@ export function useCodeMirror(options: UseCodeMirrorOptions) {
     });
   }
 
+  let languageRequest = 0;
+
+  async function setLanguageForFile(filename: string) {
+    const request = ++languageRequest;
+    const desc = findLanguage(filename);
+
+    if (!desc) {
+      view.dispatch({ effects: languageCompartment.reconfigure([]) });
+      return;
+    }
+
+    // Already loaded? Apply synchronously, no flash of unhighlighted text
+    const support = desc.support ?? (await desc.load());
+
+    // A newer file was opened while this one was loading — drop the stale result
+    if (request !== languageRequest) return;
+
+    view.dispatch({ effects: languageCompartment.reconfigure(support) });
+  }
+
   function jumpTo(offset: number, length: number) {
     const max = view.state.doc.length;
     const from = Math.min(Math.max(offset, 0), max);
@@ -233,6 +254,7 @@ export function useCodeMirror(options: UseCodeMirrorOptions) {
     getValue,
     setReadOnly,
     setLanguageExtensions,
+    setLanguageForFile,
     jumpTo,
     focus,
     destroy,
