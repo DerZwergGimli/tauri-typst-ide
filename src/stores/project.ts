@@ -2,6 +2,7 @@ import { computed, ref } from "vue";
 import { defineStore } from "pinia";
 import type { FileNode, ProjectInfo, RecentProject } from "@/types/models";
 import { useEditorStore } from "@/stores/editor";
+import { useCompileStore } from "@/stores/compile";
 import { ExecuteCommand } from "@/backend";
 
 const MAX_RECENTS = 10;
@@ -137,6 +138,7 @@ export const useProjectStore = defineStore("project", () => {
     typFiles.value = [];
     tree.value = null;
     useEditorStore().reset();
+    useCompileStore().reset();
   }
 
   async function setMainFile(path: string) {
@@ -147,6 +149,7 @@ export const useProjectStore = defineStore("project", () => {
   function applyProjectInfo(info: ProjectInfo) {
     // Discard any buffers from the previously open project.
     useEditorStore().reset();
+    useCompileStore().reset();
     root.value = info.root;
     name.value = info.name;
     mainFile.value = info.main_file;

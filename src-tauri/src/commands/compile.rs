@@ -1,17 +1,17 @@
 use std::path::PathBuf;
+use std::sync::Arc;
 use std::sync::atomic::Ordering;
 use std::time::Instant;
 
 use serde::Serialize;
 use specta::Type;
 use tauri::State;
-use tauri_plugin_opener::OpenerExt;
 use typst::diag::{Severity, SourceDiagnostic, Warned};
 use typst::{World, WorldExt, compile as typst_compile};
 use typst_layout::PagedDocument;
 use typst_pdf::{PdfOptions, pdf};
 
-use crate::error::{AppError, AppResult};
+use crate::error::{AppError, AppResult, rel_from_root};
 use crate::events::EmitExt;
 use crate::state::AppState;
 use crate::typst_engine::world::{ProjectWorld, shared_fonts};
@@ -38,7 +38,7 @@ pub struct CompileResult {
 
 /// Internal task outcome: `None` means the compile was superseded and must be
 /// discarded.
-type TaskOutcome = Option<(bool, Option<PathBuf>, Vec<Diagnostic>)>;
+pub(crate) type TaskOutcome = Option<(bool, Option<PathBuf>, Vec<Diagnostic>)>;
 
 fn diagnostic_severity(sev: Severity) -> &'static str {
     match sev {
@@ -47,7 +47,7 @@ fn diagnostic_severity(sev: Severity) -> &'static str {
     }
 }
 
-fn map_diagnostic(world: &ProjectWorld, d: &SourceDiagnostic) -> Diagnostic {
+pub(crate) fn map_diagnostic(world: &ProjectWorld, d: &SourceDiagnostic) -> Diagnostic {
     let mut path: Option<String> = None;
     let mut line: Option<u32> = None;
     let mut column: Option<u32> = None;
@@ -87,44 +87,26 @@ fn map_diagnostic(world: &ProjectWorld, d: &SourceDiagnostic) -> Diagnostic {
     }
 }
 
-fn map_diagnostics<'a>(
+pub(crate) fn map_diagnostics<'a>(
     world: &ProjectWorld,
     diags: impl Iterator<Item = &'a SourceDiagnostic>,
 ) -> Vec<Diagnostic> {
     diags.map(|e| map_diagnostic(world, e)).collect()
 }
 
-#[tauri::command]
-#[specta::specta]
-pub async fn compile(
-    app: tauri::AppHandle,
-    state: State<'_, AppState>,
-) -> AppResult<CompileResult> {
-    let start = Instant::now();
-    let project = state.project()?;
+pub(crate) async fn execute_typst_compile(
+    root: PathBuf,
+    main: PathBuf,
+    generation: u64,
+    gen_handle: Arc<std::sync::atomic::AtomicU64>,
+) -> AppResult<TaskOutcome> {
     let fonts = shared_fonts();
 
-    // Ensure main file is set
-    let main_abs = project
-        .main_file
-        .as_ref()
-        .cloned()
-        .ok_or_else(|| AppError::Other("no main file selected".into()))?;
-
-    let root = project.root.clone();
-    let main = main_abs.clone();
-
-    let (generation, gen_handle) = state.begin_compile();
-    let gen_in_task = gen_handle.clone();
-
-    app.process_status("compile", "started", None);
-    app.log("info", "compiling...");
-
-    let result = tauri::async_runtime::spawn_blocking(move || -> Result<TaskOutcome, AppError> {
+    tauri::async_runtime::spawn_blocking(move || -> Result<TaskOutcome, AppError> {
         let world = ProjectWorld::new(&root, &main, fonts)?;
         let Warned { output, warnings } = typst_compile::<PagedDocument>(&world);
 
-        let stale = || gen_in_task.load(Ordering::SeqCst) != generation;
+        let stale = || gen_handle.load(Ordering::SeqCst) != generation;
 
         match output {
             Ok(doc) => {
@@ -160,7 +142,34 @@ pub async fn compile(
         }
     })
     .await
-    .map_err(|e| AppError::Other(format!("spawn_blocking: {e}")))??;
+    .map_err(|e| AppError::Other(format!("spawn_blocking: {e}")))?
+}
+
+#[tauri::command]
+#[specta::specta]
+pub async fn compile(
+    app: tauri::AppHandle,
+    state: State<'_, AppState>,
+) -> AppResult<CompileResult> {
+    let start = Instant::now();
+    let project = state.project()?;
+    // Ensure main file is set
+    let main_abs = project
+        .main_file
+        .as_ref()
+        .cloned()
+        .ok_or_else(|| AppError::Other("no main file selected".into()))?;
+
+    let root = project.root.clone();
+    let main = main_abs.clone();
+
+    let (generation, gen_handle) = state.begin_compile();
+    let gen_in_task = gen_handle.clone();
+
+    app.process_status("compile", "started", None);
+    app.log("info", "compiling...");
+
+    let result = execute_typst_compile(root.clone(), main.clone(), generation, gen_in_task).await?;
 
     // A newer compilation superseded this one; discard its result silently.
     let Some((success, pdf_path, diagnostics)) = result else {
@@ -178,15 +187,13 @@ pub async fn compile(
     };
 
     let duration_ms = start.elapsed().as_millis() as f64;
-    let pdf_path_str = pdf_path.as_ref().map(|p| p.to_string_lossy().to_string());
+    let pdf_path_str = pdf_path
+        .as_ref()
+        .and_then(|p| rel_from_root(&root, p).ok())
+        .or_else(|| pdf_path.as_ref().map(|p| p.to_string_lossy().to_string()));
 
-    if success && pdf_path.is_some() {
+    if success {
         app.log("info", format!("compile succeeded in {duration_ms}ms"));
-        if let Some(p) = &pdf_path {
-            let _ = app
-                .opener()
-                .open_path(p.to_string_lossy().to_string(), None::<&str>);
-        }
     } else {
         app.log("warn", format!("compile failed in {duration_ms}ms"));
     }

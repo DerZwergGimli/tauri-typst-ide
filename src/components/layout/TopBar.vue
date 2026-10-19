@@ -2,6 +2,7 @@
 import { storeToRefs } from "pinia";
 import { useProjectStore } from "@/stores/project";
 import { useLogsStore } from "@/stores/logs";
+import { useCompileStore } from "@/stores/compile";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -10,13 +11,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { FolderOpen, Play } from "@lucide/vue";
+import { FileText, FolderOpen, Play } from "@lucide/vue";
 import ModeToggle from "@/components/layout/ModeToggle.vue";
 
 const project = useProjectStore();
 const logs = useLogsStore();
+const compile = useCompileStore();
 const { mainFile, typFiles, name } = storeToRefs(project);
 const { isCompiling } = storeToRefs(logs);
+const { latestPdfPath } = storeToRefs(compile);
 
 const emit = defineEmits<{ compile: [] }>();
 
@@ -28,6 +31,10 @@ function onSelectMainFile(value: unknown) {
 
 function openProjectModal() {
   project.modalOpen = true;
+}
+
+function onOpenPdf() {
+  void compile.openLatestPdf();
 }
 </script>
 
@@ -67,6 +74,16 @@ function openProjectModal() {
           class="mr-1.5 size-4 animate-spin rounded-full border-2 border-current border-t-transparent"
         />
         Compile
+      </Button>
+
+      <Button
+        size="sm"
+        variant="outline"
+        :disabled="isCompiling || !latestPdfPath"
+        @click="onOpenPdf"
+      >
+        <FileText class="mr-1.5 size-4" />
+        Open PDF
       </Button>
     </div>
     <div class="flex w-full"></div>

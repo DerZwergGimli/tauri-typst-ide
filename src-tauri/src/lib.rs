@@ -30,6 +30,7 @@ pub fn run() {
         commands::files::rename_entry,
         commands::files::delete_entry,
         commands::compile::compile,
+        commands::pipeline::run_build_pipeline,
     ]);
 
     #[cfg(debug_assertions)] // only regenerate in dev builds
@@ -62,6 +63,7 @@ pub fn run() {
             commands::files::rename_entry,
             commands::files::delete_entry,
             commands::compile::compile,
+            commands::pipeline::run_build_pipeline,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

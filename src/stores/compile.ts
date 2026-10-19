@@ -3,7 +3,7 @@ import { defineStore } from "pinia";
 import { invoke } from "@tauri-apps/api/core";
 import { useEditorStore } from "@/stores/editor";
 import { useLogsStore } from "@/stores/logs";
-import type { CompileResult } from "@/types/models";
+import type { CompileResult, FileContentBytes } from "@/types/models";
 
 export type SaveChoice = "save" | "discard" | "cancel";
 
@@ -11,6 +11,7 @@ export const useCompileStore = defineStore("compile", () => {
   const promptOpen = ref(false);
   const promptMessage = ref("Save changes before compiling?");
   const lastResult = ref<CompileResult | null>(null);
+  const latestPdfPath = ref<string | null>(null);
 
   let resolver: ((choice: SaveChoice) => void) | null = null;
 
@@ -61,8 +62,13 @@ export const useCompileStore = defineStore("compile", () => {
     if (!(await ensureSaved())) return null;
 
     try {
-      const result = await invoke<CompileResult>("compile");
+      const result = await invoke<CompileResult>("run_build_pipeline");
       lastResult.value = result;
+      if (result.pdf_path) {
+        latestPdfPath.value = result.pdf_path;
+      } else if (result.success) {
+        latestPdfPath.value = null;
+      }
       logs.setDiagnostics(result.diagnostics);
       return result;
     } catch (e) {
@@ -75,12 +81,37 @@ export const useCompileStore = defineStore("compile", () => {
     }
   }
 
+  async function openLatestPdf() {
+    const logs = useLogsStore();
+    const editor = useEditorStore();
+    const path = latestPdfPath.value;
+    if (!path) return;
+    try {
+      const res = await invoke<FileContentBytes>("read_file_bytes", { relPath: path });
+      editor.openPreview(path, Uint8Array.from(res.content).buffer);
+    } catch (e) {
+      logs.push({
+        timestamp: new Date().toISOString(),
+        level: "error",
+        message: `open pdf failed: ${String(e)}`,
+      });
+    }
+  }
+
+  function reset() {
+    lastResult.value = null;
+    latestPdfPath.value = null;
+  }
+
   return {
     promptOpen,
     promptMessage,
     lastResult,
+    latestPdfPath,
     choose,
     compile,
+    openLatestPdf,
+    reset,
     ensureSaved,
     resolveDirtyBuffers,
   };

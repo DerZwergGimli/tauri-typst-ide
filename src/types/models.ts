@@ -20,6 +20,12 @@ export interface FileContent {
   mtime_ms: number;
 }
 
+export interface FileContentBytes {
+  path: string;
+  content: number[];
+  mtime_ms: number;
+}
+
 export interface FileMeta {
   path: string;
   mtime_ms: number;

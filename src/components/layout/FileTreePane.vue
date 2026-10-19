@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { ExecuteCommand } from "@/backend/backend.ts";
+import { openPath } from "@tauri-apps/plugin-opener";
 
 const project = useProjectStore();
 const editor = useEditorStore();
@@ -162,7 +163,15 @@ async function confirmDelete() {
       class="flex my-1 h-10 shrink-0 items-center justify-between border-b px-3 text-xs font-medium text-muted-foreground"
     >
       <span class="w-full">Files</span>
-      <Button variant="ghost" size="sm">
+      <Button
+        variant="ghost"
+        size="sm"
+        @click="
+          () => {
+            openPath(project.root!);
+          }
+        "
+      >
         <FolderOpenDot />
       </Button>
       <Button

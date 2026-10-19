@@ -119,6 +119,14 @@ async compile() : Promise<Result<CompileResult, AppError>> {
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };
 }
+},
+async runBuildPipeline() : Promise<Result<CompileResult, AppError>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("run_build_pipeline") };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
 }
 }
 
